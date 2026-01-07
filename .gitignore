@@ -5,6 +5,7 @@ thumbs.db
 # Generated files
 woma
 /pyodide-env
+*.tar.*
 
 # Internal references, dependencies, temporary folders & files
 .env

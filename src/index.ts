@@ -58,30 +58,33 @@ class WrappedXMLHttpRequest extends OriginalXMLHttpRequest {
 async function main() {
   try {
     // 1. Initialize Pyodide ONCE.
+    // Pyodide distribution must be downloaded first using `bun run setup`
     // We do not want to reload the WASM module every time (too slow).
     console.log("Loading Pyodide...");
-    const pyodide = await loadPyodide();
+    const pyodide = await loadPyodide({
+      indexURL: "pyodide-env",
+    });
     await pyodide.loadPackage([
-      // "aiohttp",
-      // "audioop-lts",
-      // "beautifulsoup4",
+      "aiohttp",
+      "audioop-lts",
+      "beautifulsoup4",
       "httpx",
       "matplotlib",
-      // "numpy",
-      // "opencv-python",
-      // "orjson",
-      // "pandas",
-      // "Pillow",
+      "numpy",
+      "opencv-python",
+      "orjson",
+      "pandas",
+      "Pillow",
       "pyodide-http",
-      // "pyyaml",
-      // "regex",
-      // "requests",
-      // "ruamel.yaml",
-      // "scikit-image",
-      // "simplejson",
-      // "soundfile",
-      // "sympy",
-      // "tiktoken",
+      "pyyaml",
+      "regex",
+      "requests",
+      "ruamel.yaml",
+      "scikit-image",
+      "simplejson",
+      "soundfile",
+      "sympy",
+      "tiktoken",
     ]);
     // 2. Patch libraries
     pyodide.runPython(`
@@ -143,10 +146,8 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
         } catch (error: any) {
           // Only print the Python error message, not the JS stack trace
           if (error.message) {
-            // Get the last non-empty line of the error message
-            const lines = error.message.trim().split("\n");
-            const lastLine = lines[lines.length - 1];
-            console.log(lastLine);
+            console.log(pyodide.runPython("import sys;repr(sys.last_exc)"));
+            // console.log(error.message);
           } else {
             console.error(error);
           }
