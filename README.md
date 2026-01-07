@@ -39,9 +39,15 @@ bun install
 
 # Run the REPL
 bun src/index.ts
+
+# To use another cache directory
+bun src/index.ts --pyodide-cache my-pyodide-cache
+
+# To reset global context after every call
+bun src/index.ts --reset-globals
 ```
 
-On first run, Pyodide (~420MB) will be automatically downloaded and extracted. Subsequent runs will use the cached files.
+On first run, Pyodide (~420MB) will be automatically downloaded and extracted to `~/.pyodide-env`. Subsequent runs will use the cached files.
 
 You'll see a Python prompt where you can enter code:
 
@@ -60,6 +66,32 @@ Hello from Python!
 
 Press `Ctrl+C` to exit.
 
+## CLI Options
+
+### `--reset-globals`
+
+When enabled, each line of Python code executes in a fresh, isolated context that is destroyed after execution. This means variables and state are not preserved between executions.
+
+```bash
+bun src/index.ts --reset-globals
+```
+
+Without this flag (default behavior), the REPL maintains state between executions, allowing you to define variables and reuse them in subsequent commands.
+
+### `--pyodide-cache <path>`
+
+Specifies the directory where Pyodide files are cached. Defaults to `~/.pyodide-env`.
+
+```bash
+bun src/index.ts --pyodide-cache my-custom-cache
+```
+
+The `~` character is automatically expanded to your home directory. This is useful if you want to:
+
+- Use a different cache location
+- Share a Pyodide installation across multiple projects
+- Store the cache on a different disk
+
 ### Build Standalone Binary
 
 Compile the REPL into a single `woma` executable:
@@ -71,9 +103,12 @@ bun install
 bun run build
 # Run
 ./woma
+
+# Or run with options
+./woma --reset-globals --pyodide-cache ~/my-custom-cache
 ```
 
-The compiled binary is fully self-contained and can be distributed without requiring Bun or any other dependencies.
+The compiled binary is fully self-contained and can be distributed without requiring Bun or any other dependencies. It supports the same CLI options as the uncompiled version.
 
 ### Running Tests
 
