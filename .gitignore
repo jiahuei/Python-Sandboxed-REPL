@@ -2,6 +2,11 @@
 thumbs.db
 .DS_Store
 
+# Generated files
+woma
+/pyodide-env
+*.tar.*
+
 # Internal references, dependencies, temporary folders & files
 .env
 **/__ref__/
@@ -42,12 +47,3 @@ venv/
 # JavaScript
 **/node_modules/
 **/logs
-
-# db related
-**/ch_data/
-**/vm_data/
-**/ch_logs/
-/db/
-**/vl_data/
-**/rqlite_db/
-
