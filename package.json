@@ -1,0 +1,16 @@
+{
+  "name": "python-sandboxed-repl",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "pyodide": "^0.29.0",
+    "xmlhttprequest-ssl": "^4.0.0"
+  }
+}
