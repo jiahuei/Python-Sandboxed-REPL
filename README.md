@@ -76,7 +76,19 @@ When enabled, each line of Python code executes in a fresh, isolated context tha
 bun src/index.ts --reset-globals
 ```
 
+```python
+>>> x = 0
+>>> x
+NameError("name 'x' is not defined")
+```
+
 Without this flag (default behavior), the REPL maintains state between executions, allowing you to define variables and reuse them in subsequent commands.
+
+```python
+>>> x = 0
+>>> x
+0
+```
 
 ### `--pyodide-cache <path>`
 
