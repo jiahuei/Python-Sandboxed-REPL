@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "setup": "VERSION=0.29.0 bash download_pyodide.sh",
     "build": "bun build --compile --minify src/index.ts --outfile woma"
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
 import readline from "readline";
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 
 import { loadPyodide } from "pyodide";
 
@@ -55,10 +57,52 @@ class WrappedXMLHttpRequest extends OriginalXMLHttpRequest {
 
 (globalThis as any).XMLHttpRequest = WrappedXMLHttpRequest;
 
+const PYODIDE_VERSION = "0.29.0";
+const PYODIDE_ENV_DIR = "pyodide-env";
+const TARBALL_NAME = `pyodide-${PYODIDE_VERSION}.tar.bz2`;
+
+async function setupPyodide() {
+  // Check if pyodide-env directory already exists
+  if (existsSync(PYODIDE_ENV_DIR)) {
+    return;
+  }
+
+  console.log(`Pyodide environment not found. Setting up Pyodide ${PYODIDE_VERSION}...`);
+
+  const tarballPath = TARBALL_NAME;
+  const downloadUrl = `https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/${TARBALL_NAME}`;
+
+  // Download tarball if not already present
+  if (!existsSync(tarballPath)) {
+    console.log(`Downloading ${TARBALL_NAME}...`);
+    const response = await fetch(downloadUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to download Pyodide: ${response.status} ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    await Bun.write(tarballPath, arrayBuffer);
+    console.log("Download complete.");
+  } else {
+    console.log(`${TARBALL_NAME} already exists, skipping download.`);
+  }
+
+  // Create pyodide-env directory
+  mkdirSync(PYODIDE_ENV_DIR, { recursive: true });
+
+  // Extract tarball using tar command
+  console.log(`Extracting ${TARBALL_NAME}...`);
+  await Bun.$`tar -xjf ${tarballPath} -C ${PYODIDE_ENV_DIR} --strip-components=1`;
+  console.log("Extraction complete.");
+}
+
 async function main() {
   try {
-    // 1. Initialize Pyodide ONCE.
-    // Pyodide distribution must be downloaded first using `bun run setup`
+    // 1. Ensure Pyodide is downloaded and extracted
+    await setupPyodide();
+
+    // 2. Initialize Pyodide ONCE.
     // We do not want to reload the WASM module every time (too slow).
     console.log("Loading Pyodide...");
     const pyodide = await loadPyodide({
@@ -86,7 +130,7 @@ async function main() {
       "sympy",
       "tiktoken",
     ]);
-    // 2. Patch libraries
+    // 3. Patch libraries
     pyodide.runPython(`
 # Specify matplotlib backend
 import matplotlib
@@ -120,7 +164,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
       "\nInteractive Mode: Enter Python code to evaluate. (Ctrl+C to exit)"
     );
 
-    // 3. Set up the Readline interface to listen to Stdin
+    // 4. Set up the Readline interface to listen to Stdin
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -129,7 +173,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
 
     rl.prompt();
 
-    // 4. Handle input line-by-line
+    // 5. Handle input line-by-line
     rl.on("line", async (line) => {
       const code = line.trim();
 

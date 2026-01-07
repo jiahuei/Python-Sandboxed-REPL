@@ -37,21 +37,13 @@ This project lets you run Python code in a secure, sandboxed environment using [
 bun install
 ```
 
-### 2. Download Pyodide
-
-Download the Pyodide distribution and packages:
-
-```bash
-bun run setup
-```
-
-This downloads ~420MB of Python packages and WebAssembly files.
-
-### 3. Run the REPL
+### 2. Run the REPL
 
 ```bash
 bun src/index.ts
 ```
+
+On first run, Pyodide (~420MB) will be automatically downloaded and extracted. Subsequent runs will use the cached files.
 
 You'll see a Python prompt where you can enter code:
 
@@ -102,11 +94,12 @@ Tests verify:
 
 ## How It Works
 
-1. **Pyodide Initialization** - Loads the Python WebAssembly runtime
-2. **Package Loading** - Pre-loads popular Python packages from local files
-3. **Library Patching** - Configures matplotlib backend and patches HTTP libraries
-4. **REPL Loop** - Provides an interactive prompt using `readline`
-5. **Code Execution** - Runs Python code asynchronously and displays results
+1. **Automatic Setup** - Downloads and extracts Pyodide on first run if not already present
+2. **Pyodide Initialization** - Loads the Python WebAssembly runtime
+3. **Package Loading** - Pre-loads popular Python packages from local files
+4. **Library Patching** - Configures matplotlib backend and patches HTTP libraries
+5. **REPL Loop** - Provides an interactive prompt using `readline`
+6. **Code Execution** - Runs Python code asynchronously and displays results
 
 ## Technical Details
 
@@ -133,15 +126,14 @@ Several patches are applied to make HTTP libraries work in Bun:
 │   ├── index.ts              # Main REPL implementation
 │   ├── index.test.ts         # Test suite
 │   └── xmlhttprequest-ssl.d.ts # TypeScript definitions
-├── pyodide-env/              # Pyodide distribution (after setup)
-├── download_pyodide.sh       # Script to download Pyodide
+├── pyodide-env/              # Pyodide distribution (auto-downloaded on first run)
 ├── package.json              # Dependencies and scripts
 └── woma                      # Compiled binary (after build)
 ```
 
 ## Limitations
 
-- **Startup time**: First launch takes ~5-10 seconds to load Python runtime
+- **Startup time**: First launch downloads Pyodide and takes additional time; subsequent launches take ~5-10 seconds to load Python runtime
 - **Package size**: Pyodide distribution is ~420MB
 - **No native extensions**: Only pure Python or pre-compiled WASM packages work
 - **No filesystem**: Uses virtual filesystem
