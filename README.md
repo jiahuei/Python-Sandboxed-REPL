@@ -1,6 +1,6 @@
 # Python Sandboxed REPL
 
-A sandboxed Python REPL (Read-Eval-Print Loop) that runs entirely using WebAssembly. No Python installation required!
+A sandboxed Python REPL that compiles to a single binary, run entirely using WebAssembly. No installation required!
 
 ## What is this?
 
@@ -31,15 +31,13 @@ This project lets you run Python code in a secure, sandboxed environment using [
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Run the REPL without Compiling
 
-```bash
+```shell
+# Install dependencies
 bun install
-```
 
-### 2. Run the REPL
-
-```bash
+# Run the REPL
 bun src/index.ts
 ```
 
@@ -62,23 +60,22 @@ Hello from Python!
 
 Press `Ctrl+C` to exit.
 
-## Build Standalone Binary
+### Build Standalone Binary
 
-Compile the REPL into a single executable file:
+Compile the REPL into a single `woma` executable:
 
 ```bash
+# Install dependencies
+bun install
+# Compile
 bun run build
-```
-
-This creates a `woma` executable that you can run directly:
-
-```bash
+# Run
 ./woma
 ```
 
 The compiled binary is fully self-contained and can be distributed without requiring Bun or any other dependencies.
 
-## Running Tests
+### Running Tests
 
 Run the test suite:
 
@@ -91,15 +88,6 @@ Tests verify:
 - Basic Python execution (1+1)
 - HTTP requests with httpx
 - Compiled binary functionality
-
-## How It Works
-
-1. **Automatic Setup** - Downloads and extracts Pyodide on first run if not already present
-2. **Pyodide Initialization** - Loads the Python WebAssembly runtime
-3. **Package Loading** - Pre-loads popular Python packages from local files
-4. **Library Patching** - Configures matplotlib backend and patches HTTP libraries
-5. **REPL Loop** - Provides an interactive prompt using `readline`
-6. **Code Execution** - Runs Python code asynchronously and displays results
 
 ## Technical Details
 
@@ -140,6 +128,8 @@ Several patches are applied to make HTTP libraries work in Bun:
 - **Memory**: [Limited to 2GB](https://github.com/pyodide/pyodide/issues/1513#issuecomment-823841440)
 
 ## License
+
+This project is licensed under Apache 2.0.
 
 Pyodide is [licensed under the Mozilla Public License Version 2.0](https://github.com/pyodide/pyodide/blob/main/LICENSE).
 
