@@ -142,6 +142,8 @@ async function main() {
     console.log("Loading Pyodide...");
     const pyodide = await loadPyodide({
       indexURL: PYODIDE_ENV_DIR,
+      stdout: () => {},
+      stderr: () => {},
     });
     await pyodide.loadPackage([
       "aiohttp",
