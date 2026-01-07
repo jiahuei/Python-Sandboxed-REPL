@@ -1,6 +1,7 @@
-import readline from "readline";
 import { existsSync, mkdirSync } from "fs";
+import { homedir } from "os";
 import { join } from "path";
+import readline from "readline";
 
 import { loadPyodide } from "pyodide";
 
@@ -58,8 +59,38 @@ class WrappedXMLHttpRequest extends OriginalXMLHttpRequest {
 (globalThis as any).XMLHttpRequest = WrappedXMLHttpRequest;
 
 const PYODIDE_VERSION = "0.29.0";
-const PYODIDE_ENV_DIR = "pyodide-env";
 const TARBALL_NAME = `pyodide-${PYODIDE_VERSION}.tar.bz2`;
+
+// Parse CLI arguments
+function parseArgs() {
+  const args = Bun.argv.slice(2); // Skip 'bun' and script path
+  let resetGlobals = false;
+  let pyodideCache = join(homedir(), ".pyodide-env");
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--reset-globals") {
+      resetGlobals = true;
+    } else if (args[i] === "--pyodide-cache") {
+      i++;
+      const cachePath = args[i];
+      if (cachePath) {
+        // Expand ~ to home directory
+        if (cachePath.startsWith("~/")) {
+          pyodideCache = join(homedir(), cachePath.slice(2));
+        } else if (cachePath === "~") {
+          pyodideCache = homedir();
+        } else {
+          pyodideCache = cachePath;
+        }
+      }
+    }
+  }
+
+  return { resetGlobals, pyodideCache };
+}
+
+const { resetGlobals, pyodideCache } = parseArgs();
+const PYODIDE_ENV_DIR = pyodideCache;
 
 async function setupPyodide() {
   // Check if pyodide-env directory already exists
@@ -67,7 +98,9 @@ async function setupPyodide() {
     return;
   }
 
-  console.log(`Pyodide environment not found. Setting up Pyodide ${PYODIDE_VERSION}...`);
+  console.log(
+    `Pyodide environment not found. Setting up Pyodide ${PYODIDE_VERSION}...`
+  );
 
   const tarballPath = TARBALL_NAME;
   const downloadUrl = `https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/${TARBALL_NAME}`;
@@ -78,7 +111,9 @@ async function setupPyodide() {
     const response = await fetch(downloadUrl);
 
     if (!response.ok) {
-      throw new Error(`Failed to download Pyodide: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to download Pyodide: ${response.status} ${response.statusText}`
+      );
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -106,7 +141,9 @@ async function main() {
     // We do not want to reload the WASM module every time (too slow).
     console.log("Loading Pyodide...");
     const pyodide = await loadPyodide({
-      indexURL: "pyodide-env",
+      indexURL: PYODIDE_ENV_DIR,
+      stdout: () => {},
+      stderr: () => {},
     });
     await pyodide.loadPackage([
       "aiohttp",
@@ -178,8 +215,15 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
       const code = line.trim();
 
       if (code) {
+        const context = pyodide.toPy({});
         try {
-          const result = await pyodide.runPythonAsync(code);
+          let result;
+          if (resetGlobals) {
+            // Create a fresh context for execution
+            result = await pyodide.runPythonAsync(code, { globals: context });
+          } else {
+            result = await pyodide.runPythonAsync(code);
+          }
 
           if (result !== undefined) {
             console.log(result.toString());
@@ -195,6 +239,9 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
           } else {
             console.error(error);
           }
+        } finally {
+          // Destroy the context after execution
+          context.destroy();
         }
       }
 

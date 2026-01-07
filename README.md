@@ -1,6 +1,6 @@
 # Python Sandboxed REPL
 
-A sandboxed Python REPL (Read-Eval-Print Loop) that runs entirely using WebAssembly. No Python installation required!
+A sandboxed Python REPL that compiles to a single binary, run entirely using WebAssembly. No installation required!
 
 ## What is this?
 
@@ -31,19 +31,23 @@ This project lets you run Python code in a secure, sandboxed environment using [
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Run the REPL without Compiling
 
-```bash
+```shell
+# Install dependencies
 bun install
-```
 
-### 2. Run the REPL
-
-```bash
+# Run the REPL
 bun src/index.ts
+
+# To use another cache directory
+bun src/index.ts --pyodide-cache my-pyodide-cache
+
+# To reset global context after every call
+bun src/index.ts --reset-globals
 ```
 
-On first run, Pyodide (~420MB) will be automatically downloaded and extracted. Subsequent runs will use the cached files.
+On first run, Pyodide (~420MB) will be automatically downloaded and extracted to `~/.pyodide-env`. Subsequent runs will use the cached files.
 
 You'll see a Python prompt where you can enter code:
 
@@ -62,23 +66,63 @@ Hello from Python!
 
 Press `Ctrl+C` to exit.
 
-## Build Standalone Binary
+## CLI Options
 
-Compile the REPL into a single executable file:
+### `--reset-globals`
+
+When enabled, each line of Python code executes in a fresh, isolated context that is destroyed after execution. This means variables and state are not preserved between executions.
 
 ```bash
+bun src/index.ts --reset-globals
+```
+
+```python
+>>> x = 0
+>>> x
+NameError("name 'x' is not defined")
+```
+
+Without this flag (default behavior), the REPL maintains state between executions, allowing you to define variables and reuse them in subsequent commands.
+
+```python
+>>> x = 0
+>>> x
+0
+```
+
+### `--pyodide-cache <path>`
+
+Specifies the directory where Pyodide files are cached. Defaults to `~/.pyodide-env`.
+
+```bash
+bun src/index.ts --pyodide-cache my-custom-cache
+```
+
+The `~` character is automatically expanded to your home directory. This is useful if you want to:
+
+- Use a different cache location
+- Share a Pyodide installation across multiple projects
+- Store the cache on a different disk
+
+### Build Standalone Binary
+
+Compile the REPL into a single `woma` executable:
+
+```bash
+# Install dependencies
+bun install
+# Compile
 bun run build
-```
-
-This creates a `woma` executable that you can run directly:
-
-```bash
+# Run
 ./woma
+
+# Or run with options
+./woma --reset-globals --pyodide-cache ~/my-custom-cache
 ```
 
-The compiled binary is fully self-contained and can be distributed without requiring Bun or any other dependencies.
+The compiled binary is fully self-contained and can be distributed without requiring Bun or any other dependencies. It supports the same CLI options as the uncompiled version.
 
-## Running Tests
+### Running Tests
 
 Run the test suite:
 
@@ -91,15 +135,6 @@ Tests verify:
 - Basic Python execution (1+1)
 - HTTP requests with httpx
 - Compiled binary functionality
-
-## How It Works
-
-1. **Automatic Setup** - Downloads and extracts Pyodide on first run if not already present
-2. **Pyodide Initialization** - Loads the Python WebAssembly runtime
-3. **Package Loading** - Pre-loads popular Python packages from local files
-4. **Library Patching** - Configures matplotlib backend and patches HTTP libraries
-5. **REPL Loop** - Provides an interactive prompt using `readline`
-6. **Code Execution** - Runs Python code asynchronously and displays results
 
 ## Technical Details
 
@@ -140,6 +175,8 @@ Several patches are applied to make HTTP libraries work in Bun:
 - **Memory**: [Limited to 2GB](https://github.com/pyodide/pyodide/issues/1513#issuecomment-823841440)
 
 ## License
+
+This project is licensed under Apache 2.0.
 
 Pyodide is [licensed under the Mozilla Public License Version 2.0](https://github.com/pyodide/pyodide/blob/main/LICENSE).
 
