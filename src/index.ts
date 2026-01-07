@@ -117,7 +117,7 @@ def _no_jspi_fallback_patched(request):
 jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
     `);
     console.log(
-      "Interactive Mode: Enter Python code to evaluate. (Ctrl+C to exit)"
+      "\nInteractive Mode: Enter Python code to evaluate. (Ctrl+C to exit)"
     );
 
     // 3. Set up the Readline interface to listen to Stdin
