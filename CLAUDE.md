@@ -21,3 +21,5 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Bun.$`ls` instead of execa.
 
 ## Testing
+
+Run `bun test`.
