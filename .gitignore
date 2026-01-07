@@ -2,6 +2,10 @@
 thumbs.db
 .DS_Store
 
+# Generated files
+woma
+/pyodide-env
+
 # Internal references, dependencies, temporary folders & files
 .env
 **/__ref__/
