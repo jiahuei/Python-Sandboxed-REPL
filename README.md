@@ -158,17 +158,17 @@ Execute Python code and return the result.
 
 **Response (200):**
 
-For expressions that return a value:
+For expressions that return a value, eg `x = 2; x`:
 
 ```json
 {
   "status": "success",
   "result": "2",
-  "execution_time_ms": 45
+  "execution_time_ms": 5
 }
 ```
 
-For statements (like assignments) that don't return a value:
+For statements (like assignments) that don't return a value, eg `x = 2`:
 
 ```json
 {
@@ -178,13 +178,13 @@ For statements (like assignments) that don't return a value:
 }
 ```
 
-Python errors are also returned as successful executions with the error message in the result:
+Python errors are returned with `exception` status and with the error message in the result:
 
 ```json
 {
-  "status": "success",
+  "status": "exception",
   "result": "NameError: name 'x' is not defined",
-  "execution_time_ms": 12
+  "execution_time_ms": 5
 }
 ```
 
@@ -258,7 +258,7 @@ Tests verify:
 
 - Basic Python execution (1+1)
 - HTTP requests with httpx
-- HTTP API server endpoints (/health, /python)
+- HTTP API server endpoints (`/health`, `/python`)
 - Error handling and reset_globals functionality
 - Compiled binary functionality
 

@@ -144,8 +144,9 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
     }
     this.executionLock = true;
 
-    const startTime = Date.now();
     let context = null;
+    let status = "success";
+    const startTime = Date.now();
 
     try {
       if (!this.pyodide) {
@@ -166,6 +167,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
       } catch (error: any) {
         // Python error - treat as successful execution, return error message
         result = this.pyodide.runPython("import sys;repr(sys.last_exc)");
+        status = "exception";
       } finally {
         this.executionCount++;
         let resultStr: string | null = null;
@@ -185,7 +187,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
         }
 
         return {
-          status: "success",
+          status: status,
           result: resultStr,
           execution_time_ms: Date.now() - startTime,
         };

@@ -59,7 +59,7 @@ test("server integration tests", async () => {
     const execRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: "1 + 1" }),
+      body: JSON.stringify({ code: "x = 1 + 1; x" }),
     });
     expect(execRes.status).toBe(200);
     const result = (await execRes.json()) as ExecutionResult;
@@ -77,7 +77,7 @@ test("server integration tests", async () => {
     });
     expect(errorRes.status).toBe(200);
     const error = (await errorRes.json()) as ExecutionResult;
-    expect(error.status).toBe("success");
+    expect(error.status).toBe("exception");
     expect(error.result).not.toBe(null);
     expect(error.result!).toContain("ValueError");
     expect(error.result!).toContain("test error");

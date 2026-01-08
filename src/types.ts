@@ -5,7 +5,7 @@ export interface PyodideConfig {
 }
 
 export interface ExecutionResult {
-  status: "success" | "error";
+  status: "success" | "exception" | "error";
   result: string | null;
   error?: string;
   execution_time_ms: number;
