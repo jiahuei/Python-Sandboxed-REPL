@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Bash(bun:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}
