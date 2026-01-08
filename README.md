@@ -130,12 +130,13 @@ When started with the `--port` flag, the application runs as an HTTP API server 
 Returns server health status and Pyodide initialization state.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
   "pyodide_loaded": true,
   "uptime_seconds": 3600,
-  "executions_count": 42
+  "execution_count": 42
 }
 ```
 
@@ -144,6 +145,7 @@ Returns server health status and Pyodide initialization state.
 Execute Python code and return the result.
 
 **Request:**
+
 ```json
 {
   "code": "1 + 1",
@@ -157,6 +159,7 @@ Execute Python code and return the result.
 **Response (200):**
 
 For expressions that return a value:
+
 ```json
 {
   "status": "success",
@@ -166,6 +169,7 @@ For expressions that return a value:
 ```
 
 For statements (like assignments) that don't return a value:
+
 ```json
 {
   "status": "success",
@@ -175,6 +179,7 @@ For statements (like assignments) that don't return a value:
 ```
 
 Python errors are also returned as successful executions with the error message in the result:
+
 ```json
 {
   "status": "success",
@@ -186,11 +191,13 @@ Python errors are also returned as successful executions with the error message 
 ### API Examples
 
 **Health Check:**
+
 ```bash
 curl http://localhost:3000/health
 ```
 
 **Execute Python Code:**
+
 ```bash
 curl -X POST http://localhost:3000/python \
   -H "Content-Type: application/json" \
@@ -198,6 +205,7 @@ curl -X POST http://localhost:3000/python \
 ```
 
 **Execute with Fresh Context:**
+
 ```bash
 curl -X POST http://localhost:3000/python \
   -H "Content-Type: application/json" \
@@ -205,6 +213,7 @@ curl -X POST http://localhost:3000/python \
 ```
 
 **Test HTTP Libraries:**
+
 ```bash
 curl -X POST http://localhost:3000/python \
   -H "Content-Type: application/json" \

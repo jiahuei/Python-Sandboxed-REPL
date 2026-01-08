@@ -20,5 +20,5 @@ export interface HealthResponse {
   status: "healthy";
   pyodide_loaded: boolean;
   uptime_seconds: number;
-  executions_count: number;
+  execution_count: number;
 }

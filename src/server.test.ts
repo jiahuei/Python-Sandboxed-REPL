@@ -51,7 +51,7 @@ test("server integration tests", async () => {
     expect(health.status).toBe("healthy");
     expect(health.pyodide_loaded).toBe(true);
     expect(health.uptime_seconds).toBeGreaterThanOrEqual(0);
-    expect(health.executions_count).toBe(0);
+    expect(health.execution_count).toBe(0);
     console.log("✓ Health endpoint test passed");
 
     // Test 2: Execute simple Python code
@@ -189,9 +189,9 @@ test("server integration tests", async () => {
     // Verify execution count increased
     const finalHealthRes = await fetch(`${SERVER_URL}/health`);
     const finalHealth = (await finalHealthRes.json()) as HealthResponse;
-    expect(finalHealth.executions_count).toBeGreaterThan(0);
+    expect(finalHealth.execution_count).toBeGreaterThan(0);
     console.log(
-      `\n✓ All tests passed! Total executions: ${finalHealth.executions_count}`
+      `\n✓ All tests passed! Total executions: ${finalHealth.execution_count}`
     );
   } finally {
     // Kill server process

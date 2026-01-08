@@ -33,7 +33,9 @@ function parseArgs() {
       if (portStr) {
         port = parseInt(portStr, 10);
         if (isNaN(port) || port < 1 || port > 65535) {
-          console.error("Error: Invalid port number. Must be between 1 and 65535.");
+          console.error(
+            "Error: Invalid port number. Must be between 1 and 65535."
+          );
           process.exit(1);
         }
       } else {

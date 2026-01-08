@@ -57,12 +57,14 @@ export async function startServer(config: ServerConfig) {
   console.log(`Server listening on http://localhost:${server.port}`);
 }
 
-async function handleHealth(headers: Record<string, string>): Promise<Response> {
+async function handleHealth(
+  headers: Record<string, string>
+): Promise<Response> {
   const health: HealthResponse = {
     status: "healthy",
     pyodide_loaded: pyodideManager !== null,
     uptime_seconds: Math.floor((Date.now() - serverStartTime) / 1000),
-    executions_count: pyodideManager?.getExecutionCount() || 0,
+    execution_count: pyodideManager?.getExecutionCount() || 0,
   };
 
   return Response.json(health, { headers });
