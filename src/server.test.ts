@@ -136,23 +136,8 @@ test("server integration tests", async () => {
     expect(resetError.result!).toContain("NameError");
     console.log("✓ reset_globals test passed");
 
-    // Test 6: Test HTTP library (httpx)
-    console.log("\nTest 6: Test HTTP library (httpx)");
-    const httpxRes = await fetch(`${SERVER_URL}/python`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: "import httpx; response = httpx.get('https://httpbin.org/json'); response.status_code",
-      }),
-    });
-    expect(httpxRes.status).toBe(200);
-    const httpxResult = (await httpxRes.json()) as ExecutionResult;
-    expect(httpxResult.status).toBe("success");
-    expect(httpxResult.result).toBe("200");
-    console.log("✓ HTTP library test passed");
-
-    // Test 7: Test multiline code
-    console.log("\nTest 7: Test multiline code");
+    // Test 6: Test multiline code
+    console.log("\nTest 6: Test multiline code");
     const multilineRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -170,6 +155,36 @@ test("server integration tests", async () => {
     expect(multilineResult.status).toBe("success");
     expect(multilineResult.result).toBe("300");
     console.log("✓ Multiline code test passed");
+
+    // Test 7: Test requests library
+    console.log("\nTest 7: Test requests library");
+    const requestsRes = await fetch(`${SERVER_URL}/python`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: "import requests; response = requests.get('https://httpbin.org/json'); response.status_code",
+      }),
+    });
+    expect(requestsRes.status).toBe(200);
+    const requestsResult = (await requestsRes.json()) as ExecutionResult;
+    expect(requestsResult.status).toBe("success");
+    expect(requestsResult.result).toBe("200");
+    console.log("✓ requests library test passed");
+
+    // Test 8: Test httpx library
+    console.log("\nTest 8: Test httpx library");
+    const httpxRes = await fetch(`${SERVER_URL}/python`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: "import httpx; response = httpx.get('https://httpbin.org/json'); response.status_code",
+      }),
+    });
+    expect(httpxRes.status).toBe(200);
+    const httpxResult = (await httpxRes.json()) as ExecutionResult;
+    expect(httpxResult.status).toBe("success");
+    expect(httpxResult.result).toBe("200");
+    console.log("✓ httpx library test passed");
 
     // Verify execution count increased
     const finalHealthRes = await fetch(`${SERVER_URL}/health`);
