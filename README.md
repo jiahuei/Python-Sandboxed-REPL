@@ -23,6 +23,7 @@ This project lets you run Python code in a secure, sandboxed environment using [
   - And many more!
 - **HTTP support** - Make real HTTP requests from Python
 - **Interactive REPL** - Standard Python prompt
+- **HTTP API Server** - Expose Python execution via REST endpoints
 - **Compile to binary** - Bundle everything into a single executable
 
 ## Prerequisites
@@ -104,6 +105,129 @@ The `~` character is automatically expanded to your home directory. This is usef
 - Share a Pyodide installation across multiple projects
 - Store the cache on a different disk
 
+### `--port <number>`
+
+Start an HTTP API server instead of the interactive REPL. The server exposes Python execution via REST endpoints.
+
+```bash
+# Start server on port 3000
+bun src/index.ts --port 3000
+
+# With custom options
+bun src/index.ts --port 3000 --reset-globals --pyodide-cache ~/my-cache
+```
+
+**Note:** The server takes 5-10 seconds to initialize Pyodide on startup. Once ready, all subsequent requests are fast.
+
+## HTTP API Server Mode
+
+When started with the `--port` flag, the application runs as an HTTP API server that executes Python code via REST endpoints. Pyodide is initialized once as a global singleton to avoid cold start issues.
+
+### Endpoints
+
+#### `GET /health`
+
+Returns server health status and Pyodide initialization state.
+
+**Response:**
+
+```json
+{
+  "status": "healthy",
+  "pyodide_loaded": true,
+  "uptime_seconds": 3600,
+  "execution_count": 42
+}
+```
+
+#### `POST /python`
+
+Execute Python code and return the result.
+
+**Request:**
+
+```json
+{
+  "code": "1 + 1",
+  "reset_globals": false
+}
+```
+
+- `code` (required): Python code to execute
+- `reset_globals` (optional): If `true`, execute in a fresh isolated context. Defaults to server's `--reset-globals` flag setting.
+
+**Response (200):**
+
+For expressions that return a value, eg `x = 2; x`:
+
+```json
+{
+  "status": "success",
+  "result": "2",
+  "execution_time_ms": 5
+}
+```
+
+For statements (like assignments) that don't return a value, eg `x = 2`:
+
+```json
+{
+  "status": "success",
+  "result": null,
+  "execution_time_ms": 4
+}
+```
+
+Python errors are returned with `exception` status and with the error message in the result:
+
+```json
+{
+  "status": "exception",
+  "result": "NameError: name 'x' is not defined",
+  "execution_time_ms": 5
+}
+```
+
+### API Examples
+
+**Health Check:**
+
+```bash
+curl http://localhost:3000/health
+```
+
+**Execute Python Code:**
+
+```bash
+curl -X POST http://localhost:3000/python \
+  -H "Content-Type: application/json" \
+  -d '{"code": "import numpy as np; np.array([1,2,3]).mean()"}'
+```
+
+**Execute with Fresh Context:**
+
+```bash
+curl -X POST http://localhost:3000/python \
+  -H "Content-Type: application/json" \
+  -d '{"code": "x = 42", "reset_globals": true}'
+```
+
+**Test HTTP Libraries:**
+
+```bash
+curl -X POST http://localhost:3000/python \
+  -H "Content-Type: application/json" \
+  -d '{"code": "import httpx; httpx.get(\"https://httpbin.org/json\").json()"}'
+```
+
+### API Server Features
+
+- **Global Pyodide Instance**: Initialized once on startup to avoid cold start delays
+- **Thread Safety**: Requests are processed serially to ensure thread-safe execution
+- **CORS Enabled**: Cross-origin requests are allowed
+- **Error Handling**: Python exceptions are captured and returned with proper HTTP status codes
+- **Execution Tracking**: Health endpoint reports total execution count
+
 ### Build Standalone Binary
 
 Compile the REPL into a single `woma` executable:
@@ -134,6 +258,8 @@ Tests verify:
 
 - Basic Python execution (1+1)
 - HTTP requests with httpx
+- HTTP API server endpoints (`/health`, `/python`)
+- Error handling and reset_globals functionality
 - Compiled binary functionality
 
 ## Technical Details
@@ -158,8 +284,12 @@ Several patches are applied to make HTTP libraries work in Bun:
 ```
 .
 ├── src/
-│   ├── index.ts              # Main REPL implementation
-│   ├── index.test.ts         # Test suite
+│   ├── index.ts              # Main entry point (CLI mode)
+│   ├── index.test.ts         # CLI test suite
+│   ├── server.ts             # HTTP API server
+│   ├── server.test.ts        # Server integration tests
+│   ├── pyodide-manager.ts    # Shared Pyodide initialization and execution
+│   ├── types.ts              # Shared TypeScript interfaces
 │   └── xmlhttprequest-ssl.d.ts # TypeScript definitions
 ├── pyodide-env/              # Pyodide distribution (auto-downloaded on first run)
 ├── package.json              # Dependencies and scripts
