@@ -145,7 +145,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
     this.executionLock = true;
 
     let context = null;
-    let status = "success";
+    let status: "success" | "exception" | "error" = "success";
     const startTime = Date.now();
 
     try {

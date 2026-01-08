@@ -83,8 +83,22 @@ test("server integration tests", async () => {
     expect(error.result!).toContain("test error");
     console.log("✓ Error handling test passed");
 
-    // Test 4: Invalid request body
-    console.log("\nTest 4: Invalid request body");
+    // Test 4: Execute code with exit()
+    console.log("\nTest 4: Execute code with exit()");
+    const exitRes = await fetch(`${SERVER_URL}/python`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: "exit()" }),
+    });
+    expect(exitRes.status).toBe(200);
+    const exitResult = (await exitRes.json()) as ExecutionResult;
+    expect(exitResult.status).toBe("exception");
+    expect(exitResult.result).not.toBe(null);
+    expect(exitResult.result!).toContain("SystemExit");
+    console.log("✓ exit() handling test passed");
+
+    // Test 5: Invalid request body
+    console.log("\nTest 5: Invalid request body");
     const invalidRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,8 +113,8 @@ test("server integration tests", async () => {
     expect(invalidError.error).toContain("code");
     console.log("✓ Invalid request test passed");
 
-    // Test 5: Test reset_globals parameter
-    console.log("\nTest 5: Test reset_globals parameter");
+    // Test 6: Test reset_globals parameter
+    console.log("\nTest 6: Test reset_globals parameter");
 
     // Set a variable (assignment returns null)
     const setVarRes = await fetch(`${SERVER_URL}/python`, {
@@ -136,8 +150,8 @@ test("server integration tests", async () => {
     expect(resetError.result!).toContain("NameError");
     console.log("✓ reset_globals test passed");
 
-    // Test 6: Test multiline code
-    console.log("\nTest 6: Test multiline code");
+    // Test 7: Test multiline code
+    console.log("\nTest 7: Test multiline code");
     const multilineRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -156,8 +170,8 @@ test("server integration tests", async () => {
     expect(multilineResult.result).toBe("300");
     console.log("✓ Multiline code test passed");
 
-    // Test 7: Test requests library
-    console.log("\nTest 7: Test requests library");
+    // Test 8: Test requests library
+    console.log("\nTest 8: Test requests library");
     const requestsRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -171,8 +185,8 @@ test("server integration tests", async () => {
     expect(requestsResult.result).toBe("200");
     console.log("✓ requests library test passed");
 
-    // Test 8: Test httpx library
-    console.log("\nTest 8: Test httpx library");
+    // Test 9: Test httpx library
+    console.log("\nTest 9: Test httpx library");
     const httpxRes = await fetch(`${SERVER_URL}/python`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
