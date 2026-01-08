@@ -80,7 +80,7 @@ async function startCLI() {
           const result = await manager.execute(code, resetGlobals);
 
           // Print result (includes both successful outputs and errors)
-          if (result.result !== undefined) {
+          if (result.result !== null) {
             console.log(result.result);
           }
         } catch (error: any) {

@@ -155,11 +155,22 @@ Execute Python code and return the result.
 - `reset_globals` (optional): If `true`, execute in a fresh isolated context. Defaults to server's `--reset-globals` flag setting.
 
 **Response (200):**
+
+For expressions that return a value:
 ```json
 {
   "status": "success",
   "result": "2",
   "execution_time_ms": 45
+}
+```
+
+For statements (like assignments) that don't return a value:
+```json
+{
+  "status": "success",
+  "result": null,
+  "execution_time_ms": 4
 }
 ```
 

@@ -80,8 +80,9 @@ test(
       expect(errorRes.status).toBe(200);
       const error = (await errorRes.json()) as ExecutionResult;
       expect(error.status).toBe("success");
-      expect(error.result).toContain("ValueError");
-      expect(error.result).toContain("test error");
+      expect(error.result).not.toBe(null);
+      expect(error.result!).toContain("ValueError");
+      expect(error.result!).toContain("test error");
       console.log("✓ Error handling test passed");
 
       // Test 4: Invalid request body
@@ -92,7 +93,7 @@ test(
         body: JSON.stringify({ invalid: "field" }),
       });
       expect(invalidRes.status).toBe(400);
-      const invalidError = await invalidRes.json();
+      const invalidError = (await invalidRes.json()) as { status: string; error: string };
       expect(invalidError.status).toBe("error");
       expect(invalidError.error).toContain("code");
       console.log("✓ Invalid request test passed");
@@ -100,13 +101,15 @@ test(
       // Test 5: Test reset_globals parameter
       console.log("\nTest 5: Test reset_globals parameter");
 
-      // Set a variable
+      // Set a variable (assignment returns null)
       const setVarRes = await fetch(`${SERVER_URL}/python`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: "x = 42" }),
       });
       expect(setVarRes.status).toBe(200);
+      const setResult = (await setVarRes.json()) as ExecutionResult;
+      expect(setResult.result).toBe(null);
 
       // Access it (should work with persistent globals)
       const accessVarRes = await fetch(`${SERVER_URL}/python`, {
@@ -128,7 +131,8 @@ test(
       expect(resetRes.status).toBe(200);
       const resetError = (await resetRes.json()) as ExecutionResult;
       expect(resetError.status).toBe("success");
-      expect(resetError.result).toContain("NameError");
+      expect(resetError.result).not.toBe(null);
+      expect(resetError.result!).toContain("NameError");
       console.log("✓ reset_globals test passed");
 
       // Test 6: Test HTTP library (httpx)

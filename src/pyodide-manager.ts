@@ -168,7 +168,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
         result = this.pyodide.runPython("import sys;repr(sys.last_exc)");
       } finally {
         this.executionCount++;
-        let resultStr: string | undefined = undefined;
+        let resultStr: string | null = null;
 
         if (result !== undefined) {
           resultStr = result.toString();
