@@ -57,7 +57,7 @@ export async function startServer(config: ServerConfig) {
   console.log(`Server listening on http://localhost:${server.port}`);
 }
 
-async function handleHealth(headers: HeadersInit): Promise<Response> {
+async function handleHealth(headers: Record<string, string>): Promise<Response> {
   const health: HealthResponse = {
     status: "healthy",
     pyodide_loaded: pyodideManager !== null,
@@ -71,7 +71,7 @@ async function handleHealth(headers: HeadersInit): Promise<Response> {
 async function handleExecute(
   req: Request,
   defaultResetGlobals: boolean,
-  headers: HeadersInit
+  headers: Record<string, string>
 ): Promise<Response> {
   try {
     // Parse request
