@@ -22,3 +22,25 @@ export interface HealthResponse {
   uptime_seconds: number;
   execution_count: number;
 }
+
+// Worker message types
+export interface WorkerRequest {
+  type: "execute";
+  id: string;
+  code: string;
+  resetGlobals: boolean;
+}
+
+export interface WorkerResponse {
+  type: "result" | "error" | "ready";
+  workerId?: number;
+  id?: string;
+  result?: ExecutionResult;
+  error?: string;
+}
+
+export interface WorkerInitMessage {
+  type: "init";
+  config: PyodideConfig;
+  workerId: number;
+}

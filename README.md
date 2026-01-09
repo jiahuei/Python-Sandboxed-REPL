@@ -119,6 +119,40 @@ bun src/index.ts --port 3000 --reset-globals --pyodide-cache ~/my-cache
 
 **Note:** The server takes 5-10 seconds to initialize Pyodide on startup. Once ready, all subsequent requests are fast.
 
+### `--workers <number>`
+
+Enable multi-threaded execution using Bun Workers when running in server mode. Each worker runs its own Pyodide instance, enabling parallel Python code execution.
+
+```bash
+# Start server with 4 workers for parallel execution
+bun src/index.ts --port 3000 --workers 4
+```
+
+**Important:** This flag only works in server mode (requires `--port`).
+
+**Benefits:**
+- Parallel request processing across multiple CPU cores
+- Higher throughput for concurrent requests
+- Better resource utilization
+
+**Behavior:**
+- With 1 worker: Executions respect the `reset_globals` flag (no parallelism)
+- With 2+ workers: All code executions automatically use `reset_globals=true` for predictable, isolated execution
+- Each worker maintains its own independent Python environment
+- Requests are randomly distributed across available workers
+
+**Worker Count Guidelines:**
+- `0` (default): Single-threaded mode, lowest memory (~500MB)
+- `1`: Single worker mode, allows stateful execution with `reset_globals=false` (~500MB)
+- `2-4`: Parallel execution for moderate concurrent load (~1-2GB)
+- `8+`: High concurrent load, requires significant RAM (~4GB+)
+
+**Memory Considerations:**
+Each worker uses approximately 500MB of memory. Plan accordingly:
+- 2 workers = ~1GB
+- 4 workers = ~2GB
+- 8 workers = ~4GB
+
 ## HTTP API Server Mode
 
 When started with the `--port` flag, the application runs as an HTTP API server that executes Python code via REST endpoints. Pyodide is initialized once as a global singleton to avoid cold start issues.
@@ -223,7 +257,8 @@ curl -X POST http://localhost:3000/python \
 ### API Server Features
 
 - **Global Pyodide Instance**: Initialized once on startup to avoid cold start delays
-- **Thread Safety**: Requests are processed serially to ensure thread-safe execution
+- **Parallel Execution**: Optional worker-based execution with `--workers` flag enables concurrent Python code execution across multiple CPU cores
+- **Thread Safety**: Single-threaded mode processes requests serially; multi-worker mode processes requests in parallel with isolated contexts
 - **CORS Enabled**: Cross-origin requests are allowed
 - **Error Handling**: Python exceptions are captured and returned with proper HTTP status codes
 - **Execution Tracking**: Health endpoint reports total execution count
