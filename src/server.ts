@@ -6,6 +6,7 @@ let pyodideManager: PyodideManager | null = null;
 let workerPool: WorkerPool | null = null;
 let serverConfig: ServerConfig | null = null;
 let serverStartTime = Date.now();
+let server: ReturnType<typeof Bun.serve> | null = null;
 
 interface ServerConfig {
   port: number;
@@ -46,7 +47,7 @@ export async function startServer(config: ServerConfig) {
   console.log("Execution environment ready");
 
   // Start HTTP server
-  const server = Bun.serve({
+  server = Bun.serve({
     port: config.port,
     async fetch(req) {
       const url = new URL(req.url);
@@ -79,6 +80,9 @@ export async function startServer(config: ServerConfig) {
   });
 
   console.log(`Server listening on http://localhost:${server.port}`);
+
+  // Setup graceful shutdown handlers
+  setupShutdownHandlers();
 }
 
 async function handleHealth(
@@ -136,4 +140,48 @@ async function handleExecute(
       { status: 500, headers }
     );
   }
+}
+
+function setupShutdownHandlers() {
+  let isShuttingDown = false;
+
+  const shutdown = async (signal: string) => {
+    if (isShuttingDown) {
+      return;
+    }
+    isShuttingDown = true;
+
+    console.log(`\nReceived ${signal}, shutting down gracefully...`);
+
+    try {
+      // Stop accepting new requests
+      if (server) {
+        server.stop();
+      }
+
+      // Terminate worker pool if running
+      if (workerPool) {
+        console.log("Terminating worker pool...");
+        workerPool.terminate();
+      }
+
+      // Cleanup pyodide manager
+      if (pyodideManager) {
+        console.log("Cleaning up Pyodide manager...");
+        // PyodideManager doesn't have a cleanup method, but it will be GC'd
+      }
+
+      console.log("Server shutdown complete");
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    }
+  };
+
+  // Handle SIGINT (Ctrl+C)
+  process.on("SIGINT", () => shutdown("SIGINT"));
+
+  // Handle SIGTERM (e.g., kill command)
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
