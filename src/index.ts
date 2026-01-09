@@ -10,6 +10,7 @@ function parseArgs() {
   let resetGlobals = false;
   let pyodideCache = join(homedir(), ".pyodide-env");
   let port: number | null = null;
+  let workerCount = 0; // Default 0 = single-threaded
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--reset-globals") {
@@ -42,19 +43,40 @@ function parseArgs() {
         console.error("Error: --port flag requires a port number.");
         process.exit(1);
       }
+    } else if (args[i] === "--workers") {
+      i++;
+      const workerStr = args[i];
+      if (workerStr) {
+        workerCount = parseInt(workerStr, 10);
+        if (isNaN(workerCount) || workerCount < 0) {
+          console.error(
+            "Error: Invalid worker count. Must be a non-negative integer."
+          );
+          process.exit(1);
+        }
+      } else {
+        console.error("Error: --workers flag requires a number.");
+        process.exit(1);
+      }
     }
   }
 
-  return { resetGlobals, pyodideCache, port };
+  return { resetGlobals, pyodideCache, port, workerCount };
 }
 
-const { resetGlobals, pyodideCache, port } = parseArgs();
+const { resetGlobals, pyodideCache, port, workerCount } = parseArgs();
 
 async function main() {
   if (port !== null) {
     // Start server mode
-    await startServer({ port, resetGlobals, pyodideCache });
+    await startServer({ port, resetGlobals, pyodideCache, workerCount });
   } else {
+    if (workerCount > 0) {
+      console.error(
+        "Error: --workers flag only supported in server mode (use --port)."
+      );
+      process.exit(1);
+    }
     // Start REPL mode
     await startREPL({ resetGlobals, pyodideCache });
   }
