@@ -130,6 +130,11 @@ def _no_jspi_fallback_patched(request):
 
 
 jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
+
+# Patch _pyodide
+import _pyodide
+
+_pyodide._base.eval_code = lambda code: eval(code)
     `);
 
     if (this.config.verbose) {
@@ -216,7 +221,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
 
     if (this.config.verbose) {
       console.log(
-        `Pyodide environment not found. Setting up Pyodide ${PYODIDE_VERSION}...`
+        `Pyodide environment not found. Setting up Pyodide ${PYODIDE_VERSION}...`,
       );
     }
 
@@ -232,7 +237,7 @@ jsfetch._no_jspi_fallback = _no_jspi_fallback_patched
 
       if (!response.ok) {
         throw new Error(
-          `Failed to download Pyodide: ${response.status} ${response.statusText}`
+          `Failed to download Pyodide: ${response.status} ${response.statusText}`,
         );
       }
 
